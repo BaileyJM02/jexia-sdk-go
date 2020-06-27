@@ -5,7 +5,6 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/ddae5c0bef65c805a9a4/maintainability)](https://codeclimate.com/github/BaileyJM02/jexia-sdk-go/maintainability)
 [![Release](https://img.shields.io/github/release/baileyjm02/jexia-sdk-go.svg)](https://github.com/baileyjm02/jexia-sdk-go/releases/latest)
 ![Go](https://github.com/baileyjm02/jexia-sdk-go/workflows/Go/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/BaileyJM02/jexia-sdk-go/badge.svg?branch=master)](https://coveralls.io/github/BaileyJM02/jexia-sdk-go?branch=master)
 
 Jexia SDK Go is an unofficial multi-level API wrapper for Jexia's API written in Go for interacting with Jexia projects. The aims of this project are to support everything Jexia's [JavaScript SDK](https://github.com/jexia/jexia-sdk-js) currently does, but in a way friendly to the Go eco-system.
 
