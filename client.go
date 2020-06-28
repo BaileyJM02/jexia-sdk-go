@@ -8,17 +8,16 @@ import (
 
 // Client contains most data needed for each request
 type Client struct {
-	projectID   string
-	projectZone string
-	projectURL  string
-	apiKey      string
-	apiSecret   string
-	token       Token
-	http        *http.Client
+	projectID    string
+	projectZone  string
+	projectURL   string
+	token        Token
+	tokenRequest interface{}
+	http         *http.Client
 }
 
-// APITokenRequest is the JSON data sent to the /auth endpoint when authenticating with the API key
-type APITokenRequest struct {
+// APKTokenRequest is the JSON data sent to the /auth endpoint when authenticating with the API key
+type APKTokenRequest struct {
 	Method string `json:"method"`
 	Key    string `json:"key"`
 	Secret string `json:"secret"`
@@ -62,6 +61,21 @@ func (c *Client) SetToken(token Token) {
 	c.token = token
 }
 
+// Token assigns the user token to the client for future use
+func (c *Client) fetchToken(target *Token) error {
+	payload, _ := marshal(c.tokenRequest)
+	err := c.post(
+		fmt.Sprintf("%v/auth", c.projectURL),
+		&target,
+		setBody(payload),
+	)
+	if err != nil {
+		fmt.Printf("error from api. response: %v", err)
+		return err
+	}
+	return nil
+}
+
 // SetTokenLifetime sets the duration before a token refresh is called
 // Note: This currently only applies after the first 118 minute loop
 // TODO: Ensure that this new duration is set immediately and not after the current loop
@@ -69,36 +83,46 @@ func (c *Client) SetTokenLifetime(duration time.Duration) {
 	c.token.Lifetime = duration
 }
 
-// GetToken assigns the user token to the client for future use
-func (c *Client) GetToken() {
+// UseAPKToken assigns the user token to the client for future use
+func (c *Client) UseAPKToken(apiKey, apiSecret string) {
 	var token Token
-	payload, _ := marshal(APITokenRequest{
+	c.tokenRequest = APKTokenRequest{
 		Method: "apk",
-		Key:    c.apiKey,
-		Secret: c.apiSecret,
-	})
-	err := c.post(
-		fmt.Sprintf("%v/auth", c.projectURL),
-		&token,
-		setBody(payload),
-	)
-	if err != nil {
-		fmt.Printf("error from api. response: %v", err)
+		Key:    apiKey,
+		Secret: apiSecret,
 	}
-	// 2 hours minus 2 minutes to ensure we never lose the token
-	token.Lifetime = 118 * time.Minute
+	err := c.fetchToken(&token)
+	if err != nil {
+		fmt.Printf("Unable to fetch token")
+	}
 	c.SetToken(token)
+	// 2 hours minus 2 minutes to ensure we never lose the token
+	c.SetTokenLifetime(118 * time.Minute)
+	go c.startRefreshing()
+}
+
+// UseUMSToken assigns the user token to the client for future use
+func (c *Client) UseUMSToken(email, password string) {
+	var token Token
+	c.tokenRequest = UMSTokenRequest{
+		Method:   "ums",
+		Email:    email,
+		Password: password,
+	}
+	err := c.fetchToken(&token)
+	if err != nil {
+		fmt.Printf("Unable to fetch token")
+	}
+	c.SetToken(token)
+	// 2 hours minus 2 minutes to ensure we never lose the token
+	c.SetTokenLifetime(118 * time.Minute)
 	go c.startRefreshing()
 }
 
 // RefreshToken triggers a token refresh once called
 func (c *Client) RefreshToken() {
 	var token Token
-	payload, _ := marshal(APITokenRequest{
-		Method: "apk",
-		Key:    c.apiKey,
-		Secret: c.token.Refresh,
-	})
+	payload, _ := marshal(c.tokenRequest)
 	err := c.post(fmt.Sprintf("%v/auth/refresh", c.projectURL), &token, setBody(payload), addToken(c.token.Access))
 	if err != nil {
 		fmt.Printf("error from api. response: %v", err)
@@ -116,14 +140,13 @@ func (c *Client) startRefreshing() {
 }
 
 // NewClient is used to generate a new client for interacting with the API
-func NewClient(id, zone, key, secret string, opts ...Option) *Client {
+func NewClient(id, zone string, opts ...Option) *Client {
 	client := &Client{
-		projectID:   id,
-		projectZone: zone,
-		projectURL:  fmt.Sprintf("https://%v.%v.app.jexia.com", id, zone),
-		apiKey:      key,
-		apiSecret:   secret,
-		token:       Token{},
+		projectID:    id,
+		projectZone:  zone,
+		projectURL:   fmt.Sprintf("https://%v.%v.app.jexia.com", id, zone),
+		token:        Token{},
+		tokenRequest: nil,
 		// TODO: Add optimisations to default http client
 		http: &http.Client{},
 	}
