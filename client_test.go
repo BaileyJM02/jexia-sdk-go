@@ -3,7 +3,6 @@ package jexiasdkgo
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,16 +11,16 @@ import (
 func TestNewClient(t *testing.T) {
 	var client *Client
 	client = NewClient(
-		os.Getenv("PROJECT_ID"),
-		os.Getenv("PROJECT_ZONE"),
-		os.Getenv("API_KEY"),
-		os.Getenv("API_SECRET"),
+		"projectID",
+		"projectZone",
+		"APIKey",
+		"APISecret",
 	)
-	assert.Equal(t, client.projectID, os.Getenv("PROJECT_ID"))
-	assert.Equal(t, client.projectZone, os.Getenv("PROJECT_ZONE"))
-	assert.Equal(t, client.apiKey, os.Getenv("API_KEY"))
-	assert.Equal(t, client.apiSecret, os.Getenv("API_SECRET"))
-	assert.Equal(t, client.token, Token{})
+	assert.Equal(t, "projectID", client.projectID)
+	assert.Equal(t, "projectZone", client.projectZone)
+	assert.Equal(t, "APIKey", client.apiKey)
+	assert.Equal(t, "APISecret", client.apiSecret)
+	assert.Equal(t, Token{}, client.token)
 }
 
 func TestSetNewClientProjectUrl(t *testing.T) {
@@ -35,10 +34,10 @@ func TestSetNewClientProjectUrl(t *testing.T) {
 
 	var client *Client
 	client = NewClient(
-		os.Getenv("PROJECT_ID"),
-		os.Getenv("PROJECT_ZONE"),
-		os.Getenv("API_KEY"),
-		os.Getenv("API_SECRET"),
+		"projectID",
+		"projectZone",
+		"APIKey",
+		"APISecret",
 		SetProjectURL(server.URL),
 	)
 	assert.Equal(t, client.projectURL, server.URL)
@@ -56,10 +55,10 @@ func TestNewClientWithToken(t *testing.T) {
 
 	var client *Client
 	client = NewClient(
-		os.Getenv("PROJECT_ID"),
-		os.Getenv("PROJECT_ZONE"),
-		os.Getenv("API_KEY"),
-		os.Getenv("API_SECRET"),
+		"projectID",
+		"projectZone",
+		"APIKey",
+		"APISecret",
 		SetProjectURL(server.URL),
 	)
 	client.GetToken()
