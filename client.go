@@ -20,14 +20,22 @@ type Client struct {
 	http        *http.Client
 }
 
-// TokenRequest is the JSON data sent to the /auth endpoint when authenticating with the API key
-type TokenRequest struct {
+// APITokenRequest is the JSON data sent to the /auth endpoint when authenticating with the API key
+type APITokenRequest struct {
 	Method string `json:"method"`
 	Key    string `json:"key"`
 	Secret string `json:"secret"`
 }
 
+// UMSTokenRequest is the JSON data sent to the /auth endpoint when authenticating with user credentials
+type UMSTokenRequest struct {
+	Method string `json:"method"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 // Token is the response from the /auth request which contains the access and refresh tokens
+// Currently, each token lasts 2 hours. https://docs.jexia.com/auth/#:~:text=token%20is%20valid%20for
 type Token struct {
 	Access  string `json:"access_token"`
 	Refresh string `json:"refresh_token"`
@@ -55,7 +63,7 @@ func SetProjectURL(url string) Option {
 // TODO: Trigger auto-refresh once called
 func (c *Client) GetToken() {
 	var token Token
-	err := c.post(fmt.Sprintf("%v/auth", c.projectURL), TokenRequest{
+	err := c.post(fmt.Sprintf("%v/auth", c.projectURL), APITokenRequest{
 		Method: "apk",
 		Key:    c.apiKey,
 		Secret: c.apiSecret,
