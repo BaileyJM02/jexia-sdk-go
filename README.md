@@ -21,8 +21,8 @@ Jexia SDK Go is an unofficial multi-level API wrapper for Jexia's API written in
 
 This is the order we are trying to implement features in.
 
-- [ ] Authentication (40%)
-  - [ ] API Key (70%)
+- [ ] Authentication (70%)
+  - [x] API Key
   - [ ] Project User (0%)
 - [ ] Relations
 - [ ] Datasets
