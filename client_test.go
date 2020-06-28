@@ -1,6 +1,7 @@
 package jexiasdkgo
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -30,7 +31,7 @@ func TestSetHTTPClient(t *testing.T) {
 
 func TestSetProjectURL(t *testing.T) {
 	var client *Client
-	
+
 	client = NewClient(
 		"projectID",
 		"projectZone",
@@ -84,8 +85,30 @@ func TestNewClientWithToken(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		// Test request parameters
 		assert.Equal(t, req.URL.String(), "/auth")
+		assert.Equal(t, req.Method, http.MethodPost)
+
+		actual := APITokenRequest{}
+		target := APITokenRequest{
+			Method: "apk",
+			Key:    "APIKey",
+			Secret: "APISecret",
+		}
+		b, err := read(req.Body)
+		if err != nil {
+			assert.Error(t, err)
+		}
+		err = unmarshal(b, &actual)
+		if err != nil {
+			assert.Error(t, err)
+		}
+		assert.Equal(t, target, actual)
+
+		payload, _ := marshal(Token{
+			Access:  "yourAccessToken",
+			Refresh: "yourRefreshToken",
+		})
 		// Send response to be tested
-		rw.Write([]byte(`{"access_token":"yourAccessToken","refresh_token":"yourRefreshToken"}`))
+		rw.Write(payload)
 	}))
 	// Close the server when test finishes
 	defer server.Close()
@@ -101,4 +124,79 @@ func TestNewClientWithToken(t *testing.T) {
 	client.GetToken()
 	assert.Equal(t, "yourAccessToken", client.token.Access)
 	assert.Equal(t, "yourRefreshToken", client.token.Refresh)
+	assert.Equal(t, 118*time.Minute, client.token.Lifetime)
+}
+
+func TestSetTokenLifetime(t *testing.T) {
+	// Start a local HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		// Test request parameters
+		assert.Equal(t, req.URL.String(), "/auth")
+		assert.Equal(t, req.Method, http.MethodPost)
+
+		payload, _ := marshal(Token{
+			Access:  "yourAccessToken",
+			Refresh: "yourRefreshToken",
+		})
+		// Send response to be tested
+		rw.Write(payload)
+	}))
+	// Close the server when test finishes
+	defer server.Close()
+
+	var client *Client
+	client = NewClient(
+		"projectID",
+		"projectZone",
+		"APIKey",
+		"APISecret",
+		SetProjectURL(server.URL),
+	)
+	client.GetToken()
+	assert.Equal(t, 118*time.Minute, client.token.Lifetime)
+
+	client.SetTokenLifetime(60 * time.Minute)
+	assert.Equal(t, 60*time.Minute, client.token.Lifetime)
+
+	assert.Equal(t, "yourAccessToken", client.token.Access)
+	assert.Equal(t, "yourRefreshToken", client.token.Refresh)
+}
+
+func TestRefreshToken(t *testing.T) {
+	token := Token{
+		Access:  "yourCurrentAccessToken",
+		Refresh: "yourCurrentRefreshToken",
+	}
+	// Start a local HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		// Test request parameters
+		assert.Equal(t, "/auth/refresh", req.URL.String())
+		headers := req.Header
+		assert.Equal(t, 1, len(headers["Authorization"]))
+		assert.Equal(t, fmt.Sprintf("Bearer %v", token.Access), headers["Authorization"][0])
+		// Send response to be tested
+		assert.Equal(t, req.Method, http.MethodPost)
+
+		payload, _ := marshal(Token{
+			Refresh: "yourNewRefreshToken",
+		})
+		// Send response to be tested
+		rw.Write(payload)
+	}))
+	// Close the server when test finishes
+	defer server.Close()
+
+	client := &Client{
+		projectID:   "projectID",
+		projectZone: "projectZone",
+		projectURL:  server.URL,
+		apiKey:      "APIKey",
+		apiSecret:   "APISecret",
+		token:       token,
+		http:        &http.Client{},
+	}
+
+	client.RefreshToken()
+	assert.Equal(t, "yourCurrentAccessToken", client.token.Access)
+	assert.Equal(t, "yourNewRefreshToken", client.token.Refresh)
 }
