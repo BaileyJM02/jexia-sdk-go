@@ -4,9 +4,46 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestSetHTTPClient(t *testing.T) {
+	var client *Client
+	var httpClient *http.Client
+
+	client = NewClient(
+		"projectID",
+		"projectZone",
+		"APIKey",
+		"APISecret",
+	)
+	httpClient = &http.Client{nil, nil, nil, 2 * time.Microsecond}
+
+	option := SetHTTPClient(httpClient)
+
+	assert.NotEqual(t, httpClient, client.http)
+	option(client)
+	assert.Equal(t, httpClient, client.http)
+}
+
+func TestSetProjectURL(t *testing.T) {
+	var client *Client
+	
+	client = NewClient(
+		"projectID",
+		"projectZone",
+		"APIKey",
+		"APISecret",
+	)
+
+	option := SetProjectURL("testURL")
+
+	assert.NotEqual(t, "testURL", client.projectURL)
+	option(client)
+	assert.Equal(t, "testURL", client.projectURL)
+}
 
 func TestNewClient(t *testing.T) {
 	var client *Client
