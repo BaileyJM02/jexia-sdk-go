@@ -26,8 +26,7 @@ func TestNewClient(t *testing.T) {
 func TestSetNewClientProjectUrl(t *testing.T) {
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		// Server should not be called with NewClient at any point.
-		assert.True(t, false)
+		assert.Fail(t, "Server should not be called at NewClient at any point.")
 	}))
 	// Close the server when test finishes
 	defer server.Close()
@@ -42,6 +41,7 @@ func TestSetNewClientProjectUrl(t *testing.T) {
 	)
 	assert.Equal(t, client.projectURL, server.URL)
 }
+
 func TestNewClientWithToken(t *testing.T) {
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
