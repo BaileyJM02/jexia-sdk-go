@@ -318,7 +318,7 @@ func TestAutoRefreshToken(t *testing.T) {
 	token := Token{
 		Access:   "yourCurrentAccessToken",
 		Refresh:  "yourCurrentRefreshToken",
-		Lifetime: time.Millisecond,
+		Lifetime: 5 * time.Millisecond,
 	}
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -356,7 +356,7 @@ func TestAutoRefreshToken(t *testing.T) {
 	client.AutoRefreshToken()
 	// The shortest amount of time we can wait before a race condition is likely to appear due to the short periods of time
 	// The fastest so we don't have hanging tests
-	time.Sleep(3950 * time.Microsecond)
+	time.Sleep(25 * time.Millisecond)
 	// stop the refresh loop externally
 	close(client.abortRefresh)
 	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
@@ -366,7 +366,7 @@ func TestNewRefreshCycle(t *testing.T) {
 	token := Token{
 		Access:   "yourCurrentAccessToken",
 		Refresh:  "yourCurrentRefreshToken",
-		Lifetime: time.Millisecond,
+		Lifetime: 5 * time.Millisecond,
 	}
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -404,7 +404,7 @@ func TestNewRefreshCycle(t *testing.T) {
 	client.newRefreshCycle()
 	// The shortest amount of time we can wait before a race condition is likely to 
 	// appear due to the short periods of time but the fastest so we don't have hanging tests
-	time.Sleep(3950 * time.Microsecond)
+	time.Sleep(25 * time.Millisecond)
 	// stop the refresh loop externally
 	close(client.abortRefresh)
 
