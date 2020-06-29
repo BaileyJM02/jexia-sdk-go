@@ -13,8 +13,8 @@ type APIError struct {
 	Message string `json:"message"`
 }
 
-// checkError is an internal function wrapper for returning a more useful API error
-func checkError(response *http.Response) (error) {
+// checkForAPIError is an internal function wrapper for returning a more useful API error
+func checkForAPIError(response *http.Response) (error) {
 	// Success is indicated with 2xx status codes:
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
 		return nil

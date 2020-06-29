@@ -28,7 +28,7 @@ func TestCheckErrorOnFailedCall(t *testing.T) {
 		Body:          ioutil.NopCloser(bytes.NewReader(body)),
 	}
 
-	err = checkError(response)
+	err = checkForAPIError(response)
 	assert.Contains(t, err.Error(), target.ID)
 	assert.Contains(t, err.Error(), target.Message)
 }
@@ -52,6 +52,6 @@ func TestCheckErrorOnSuccessfulCall(t *testing.T) {
 		Body:          ioutil.NopCloser(bytes.NewReader(body)),
 	}
 
-	err = checkError(response)
+	err = checkForAPIError(response)
 	assert.Equal(t, err, nil)
 }
