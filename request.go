@@ -72,8 +72,9 @@ func (c *Client) executeRequest(req *http.Request, target interface{}) error {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("error from api. httpCode: %d", resp.StatusCode)
+	err = checkForAPIError(resp)
+	if err != nil {
+		return err
 	}
 
 	b, err := read(resp.Body)
