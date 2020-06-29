@@ -82,6 +82,20 @@ func (c *Client) fetchToken(target *Token) error {
 	return nil
 }
 
+// ForgetSecrets removes the secret from the APKTokenRequest or the password from the UMSTokenRequest
+func (c *Client) ForgetSecrets() {
+	switch c.tokenRequest.(type) {
+	case APKTokenRequest:
+		apk := c.tokenRequest.(APKTokenRequest)
+		apk.Secret = ""
+		c.tokenRequest = apk
+	case UMSTokenRequest:
+		ums := c.tokenRequest.(UMSTokenRequest)
+		ums.Password = ""
+		c.tokenRequest = ums
+	}
+}
+
 // SetTokenLifetime sets the duration before a token refresh is called
 // Note: This currently only applies after the first 118 minute loop
 // TODO: Ensure that this new duration is set immediately and not after the current loop
