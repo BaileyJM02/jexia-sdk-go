@@ -201,7 +201,7 @@ func TestNewClientWithUMSToken(t *testing.T) {
 
 		actual := UMSTokenRequest{}
 		target := UMSTokenRequest{
-			Method: "ums",
+			Method:   "ums",
 			Email:    "email",
 			Password: "password",
 		}
@@ -232,6 +232,8 @@ func TestNewClientWithUMSToken(t *testing.T) {
 		SetProjectURL(server.URL),
 	)
 	client.UseUMSToken("email", "password")
+	client.AutoRefreshToken()
+
 	assert.Equal(t, "yourAccessToken", client.token.Access)
 	assert.Equal(t, "yourRefreshToken", client.token.Refresh)
 	assert.Equal(t, 118*time.Minute, client.token.Lifetime)
@@ -267,7 +269,7 @@ func TestRefreshTokenWithUMSToken(t *testing.T) {
 		projectURL:  server.URL,
 		token:       token,
 		tokenRequest: UMSTokenRequest{
-			Method: "ums",
+			Method:   "ums",
 			Email:    "APIKey",
 			Password: "APISecret",
 		},
@@ -311,3 +313,102 @@ func TestSetTokenLifetimeWithUMSToken(t *testing.T) {
 	assert.Equal(t, "yourAccessToken", client.token.Access)
 	assert.Equal(t, "yourRefreshToken", client.token.Refresh)
 }
+
+func TestAutoRefreshToken(t *testing.T) {
+	token := Token{
+		Access:   "yourCurrentAccessToken",
+		Refresh:  "yourCurrentRefreshToken",
+		Lifetime: time.Millisecond,
+	}
+	// Start a local HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		// Test request parameters
+		assert.Equal(t, "/auth/refresh", req.URL.String())
+		headers := req.Header
+		assert.Equal(t, 1, len(headers["Authorization"]))
+		assert.Equal(t, fmt.Sprintf("Bearer %v", token.Access), headers["Authorization"][0])
+		// Send response to be tested
+		assert.Equal(t, req.Method, http.MethodPost)
+
+		payload, _ := marshal(Token{
+			Refresh: "yourNewRefreshToken",
+		})
+		// Send response to be tested
+		rw.Write(payload)
+	}))
+	// Close the server when test finishes
+	defer	server.Close()
+
+	client := &Client{
+		projectID:   "projectID",
+		projectZone: "projectZone",
+		projectURL:  server.URL,
+		token:       token,
+		tokenRequest: UMSTokenRequest{
+			Method:   "ums",
+			Email:    "APIKey",
+			Password: "APISecret",
+		},
+		http: &http.Client{},
+		abortRefresh: make(chan bool),
+	}
+
+	client.AutoRefreshToken()
+	// The shortest amount of time we can wait before a race condition is likely to appear due to the short periods of time
+	// The fastest so we don't have hanging tests
+	time.Sleep(3950 * time.Microsecond)
+	// stop the refresh loop externally
+	close(client.abortRefresh)
+	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
+	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
+}
+func TestNewRefreshCycle(t *testing.T) {
+	token := Token{
+		Access:   "yourCurrentAccessToken",
+		Refresh:  "yourCurrentRefreshToken",
+		Lifetime: time.Millisecond,
+	}
+	// Start a local HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		// Test request parameters
+		assert.Equal(t, "/auth/refresh", req.URL.String())
+		headers := req.Header
+		assert.Equal(t, 1, len(headers["Authorization"]))
+		assert.Equal(t, fmt.Sprintf("Bearer %v", token.Access), headers["Authorization"][0])
+		// Send response to be tested
+		assert.Equal(t, req.Method, http.MethodPost)
+
+		payload, _ := marshal(Token{
+			Refresh: "yourNewRefreshToken",
+		})
+		// Send response to be tested
+		rw.Write(payload)
+	}))
+	// Close the server when test finishes
+	defer	server.Close()
+
+	client := &Client{
+		projectID:   "projectID",
+		projectZone: "projectZone",
+		projectURL:  server.URL,
+		token:       token,
+		tokenRequest: UMSTokenRequest{
+			Method:   "ums",
+			Email:    "APIKey",
+			Password: "APISecret",
+		},
+		http: &http.Client{},
+		abortRefresh: make(chan bool),
+	}
+
+	client.newRefreshCycle()
+	// The shortest amount of time we can wait before a race condition is likely to 
+	// appear due to the short periods of time but the fastest so we don't have hanging tests
+	time.Sleep(3950 * time.Microsecond)
+	// stop the refresh loop externally
+	close(client.abortRefresh)
+
+	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
+	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
+}
+
