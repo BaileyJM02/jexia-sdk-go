@@ -64,4 +64,5 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
-          coverageCommand: go test ./... -coverprofile c.out
+          coverageCommand: go test ./... -coverprofile ${{github.workspace}}/coverage.out
+          coverageLocations: ${{github.workspace}}/coverage.out:gocov  
