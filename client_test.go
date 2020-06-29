@@ -192,6 +192,35 @@ func TestSetTokenLifetimeWithAPKToken(t *testing.T) {
 	assert.Equal(t, "yourRefreshToken", client.token.Refresh)
 }
 
+func TestSetupTokenWithDefaults(t *testing.T) {
+	// Start a local HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		// Test request parameters
+		assert.Equal(t, req.URL.String(), "/auth")
+		assert.Equal(t, req.Method, http.MethodPost)
+		payload, _ := marshal(Token{
+			Access:  "yourAccessToken",
+			Refresh: "yourRefreshToken",
+		})
+		// Send response to be tested
+		rw.Write(payload)
+	}))
+	// Close the server when test finishes
+	defer server.Close()
+
+	var client *Client
+	client = NewClient(
+		"projectID",
+		"projectZone",
+		SetProjectURL(server.URL),
+	)
+	client.setupTokenWithDefaults()
+
+	assert.Equal(t, "yourAccessToken", client.token.Access)
+	assert.Equal(t, "yourRefreshToken", client.token.Refresh)
+	assert.Equal(t, DefaultLifetime, client.token.Lifetime)
+}
+
 func TestNewClientWithUMSToken(t *testing.T) {
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
