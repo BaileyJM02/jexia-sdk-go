@@ -115,34 +115,43 @@ func (c *Client) SetTokenLifetime(duration time.Duration) {
 	c.SetToken(token)
 }
 
-func (c *Client) setupTokenWithDefaults() {
+func (c *Client) setupTokenWithDefaults() (error) {
 	var token Token
 	err := c.fetchToken(&token)
 	if err != nil {
-		fmt.Printf("Unable to login with token")
+		return err
 	}
 	c.SetToken(token)
 	c.SetTokenLifetime(DefaultLifetime)
+	return nil
 }
 
 // UseAPKToken assigns the user token to the client for future use
-func (c *Client) UseAPKToken(apiKey, apiSecret string) {
+func (c *Client) UseAPKToken(apiKey, apiSecret string) (error) {
 	c.SetTokenRequest(APKTokenRequest{
 		Method: "apk",
 		Key:    apiKey,
 		Secret: apiSecret,
 	})
-	c.setupTokenWithDefaults()
+	err := c.setupTokenWithDefaults()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // UseUMSToken assigns the user token to the client for future use
-func (c *Client) UseUMSToken(email, password string) {
+func (c *Client) UseUMSToken(email, password string) (error) {
 	c.SetTokenRequest(UMSTokenRequest{
 		Method:   "ums",
 		Email:    email,
 		Password: password,
 	})
-	c.setupTokenWithDefaults()
+	err := c.setupTokenWithDefaults()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // RefreshToken triggers a token refresh once called
