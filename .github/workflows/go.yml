@@ -62,7 +62,7 @@ jobs:
         
         
       - name: Test
-        run:  go test . -coverprofile ${{github.workspace}}/coverage.out
+        run:  go test . -coverprofile ./coverage.out
 
         
       - name: Publish code coverage
@@ -70,4 +70,5 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
-          coverageLocations: ${{github.workspace}}/coverage.out:gocov  
+          coverageCommand: go test . -coverprofile ./coverage.out
+          coverageLocations: ./coverage.out:gocov  
