@@ -415,3 +415,47 @@ func TestNewRefreshCycle(t *testing.T) {
 	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
 	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
 }
+
+func TestForgetSecretsAPK(t *testing.T) {
+	var client *Client
+	client = &Client{
+		projectID:   "projectID",
+		projectZone: "projectZone",
+		projectURL:  "",
+		token:       Token{},
+		tokenRequest: APKTokenRequest{
+			Method: "ums",
+			Key:    "APIKey",
+			Secret: "APISecret",
+		},
+		http:         &http.Client{},
+		abortRefresh: make(chan bool),
+	}
+	assert.Equal(t, "APIKey", client.tokenRequest.(APKTokenRequest).Key)
+	assert.Equal(t, "APISecret", client.tokenRequest.(APKTokenRequest).Secret)
+	client.ForgetSecrets()
+	assert.Equal(t, "APIKey", client.tokenRequest.(APKTokenRequest).Key)
+	assert.Equal(t, "", client.tokenRequest.(APKTokenRequest).Secret)
+}
+
+func TestForgetSecretsUMS(t *testing.T) {
+	var client *Client
+	client = &Client{
+		projectID:   "projectID",
+		projectZone: "projectZone",
+		projectURL:  "",
+		token:       Token{},
+		tokenRequest: UMSTokenRequest{
+			Method:   "ums",
+			Email:    "email",
+			Password: "password",
+		},
+		http:         &http.Client{},
+		abortRefresh: make(chan bool),
+	}
+	assert.Equal(t, "email", client.tokenRequest.(UMSTokenRequest).Email)
+	assert.Equal(t, "password", client.tokenRequest.(UMSTokenRequest).Password)
+	client.ForgetSecrets()
+	assert.Equal(t, "email", client.tokenRequest.(UMSTokenRequest).Email)
+	assert.Equal(t, "", client.tokenRequest.(UMSTokenRequest).Password)
+}
