@@ -45,6 +45,7 @@ jobs:
         with:
           go-version: ^1.13
         id: go
+        
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
@@ -59,10 +60,14 @@ jobs:
       - name: Build
         run: go build -v .
         
-      - name: Test & publish code coverage
+        
+      - name: Test
+        run:  go test . -coverprofile ${{github.workspace}}/coverage.out
+
+        
+      - name: Publish code coverage
         uses: paambaati/codeclimate-action@v2.6.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
-          coverageCommand: go test . -coverprofile ${{github.workspace}}/coverage.out
           coverageLocations: ${{github.workspace}}/coverage.out:gocov  
