@@ -2,10 +2,15 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/baileyjm02/jexia-sdk-go)](https://goreportcard.com/report/github.com/baileyjm02/jexia-sdk-go)
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://pkg.go.dev/github.com/baileyjm02/jexia-sdk-go)
-[![Maintainability](https://api.codeclimate.com/v1/badges/ddae5c0bef65c805a9a4/maintainability)](https://codeclimate.com/github/BaileyJM02/jexia-sdk-go/maintainability)
+[![Maintainability](https://img.shields.io/codeclimate/maintainability/BaileyJM02/jexia-sdk-go?logo=code-climate)](https://codeclimate.com/github/BaileyJM02/jexia-sdk-go/maintainability)
+![Code Climate issues](https://img.shields.io/codeclimate/issues/BaileyJM02/jexia-sdk-go?logo=code-climate)
+![Code Climate technical debt](https://img.shields.io/codeclimate/tech-debt/BaileyJM02/jexia-sdk-go?logo=code-climate)
 [![codecov](https://codecov.io/gh/BaileyJM02/jexia-sdk-go/branch/master/graph/badge.svg)](https://codecov.io/gh/BaileyJM02/jexia-sdk-go)
 [![Release](https://img.shields.io/github/release/baileyjm02/jexia-sdk-go.svg)](https://github.com/baileyjm02/jexia-sdk-go/releases/latest)
 ![Go CLI](https://github.com/BaileyJM02/jexia-sdk-go/workflows/Go%20CLI/badge.svg)
+![Discord](https://img.shields.io/discord/692047699377127475?label=discord&logo=discord&logoColor=white)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/BaileyJM02/jexia-sdk-go)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/baileyjm02/jexia-sdk-go)
 
 Jexia SDK Go is an unofficial multi-level API wrapper for Jexia's API written in Go for interacting with Jexia projects. The aims of this project are to support everything Jexia's [JavaScript SDK](https://github.com/jexia/jexia-sdk-js) currently does, but in a way friendly to the Go eco-system.
 
