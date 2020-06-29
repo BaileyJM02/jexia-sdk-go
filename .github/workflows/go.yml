@@ -8,8 +8,8 @@ on:
 
 jobs:
 
-  build:
-    name: Build
+  run-tests:
+    name: Run Tests
     runs-on: ubuntu-latest
     steps:
 
@@ -35,3 +35,14 @@ jobs:
 
     - name: Test
       run: go test -v .
+
+  test-coverage:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test & publish code coverage
+        uses: paambaati/codeclimate-action@v2.6.0
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        with:
+          coverageCommand: go test -cover
