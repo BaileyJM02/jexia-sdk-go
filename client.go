@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+const (
+	// DefaultLifetime is 2 hours minus 2 minutes to ensure we never lose the token
+	DefaultLifetime = 118 * time.Minute
+)
+
 // Client contains most data needed for each request
 type Client struct {
 	projectID    string
@@ -62,6 +67,11 @@ func (c *Client) SetToken(token Token) {
 	c.token = token
 }
 
+// SetTokenRequest assigns the user token to the client for future use
+func (c *Client) SetTokenRequest(tokenRequest interface{}) {
+	c.tokenRequest = tokenRequest
+}
+
 // GetToken passes the current token
 func (c *Client) GetToken() Token {
 	return c.token
@@ -105,38 +115,34 @@ func (c *Client) SetTokenLifetime(duration time.Duration) {
 	c.SetToken(token)
 }
 
+func (c *Client) setupTokenWithDefaults() {
+	var token Token
+	err := c.fetchToken(&token)
+	if err != nil {
+		fmt.Printf("Unable to login with token")
+	}
+	c.SetToken(token)
+	c.SetTokenLifetime(DefaultLifetime)
+}
+
 // UseAPKToken assigns the user token to the client for future use
 func (c *Client) UseAPKToken(apiKey, apiSecret string) {
-	var token Token
-	c.tokenRequest = APKTokenRequest{
+	c.SetTokenRequest(APKTokenRequest{
 		Method: "apk",
 		Key:    apiKey,
 		Secret: apiSecret,
-	}
-	err := c.fetchToken(&token)
-	if err != nil {
-		fmt.Printf("Unable to fetch token")
-	}
-	c.SetToken(token)
-	// 2 hours minus 2 minutes to ensure we never lose the token
-	c.SetTokenLifetime(118 * time.Minute)
+	})
+	c.setupTokenWithDefaults()
 }
 
 // UseUMSToken assigns the user token to the client for future use
 func (c *Client) UseUMSToken(email, password string) {
-	var token Token
-	c.tokenRequest = UMSTokenRequest{
+	c.SetTokenRequest(UMSTokenRequest{
 		Method:   "ums",
 		Email:    email,
 		Password: password,
-	}
-	err := c.fetchToken(&token)
-	if err != nil {
-		fmt.Printf("Unable to fetch token")
-	}
-	c.SetToken(token)
-	// 2 hours minus 2 minutes to ensure we never lose the token
-	c.SetTokenLifetime(118 * time.Minute)
+	})
+	c.setupTokenWithDefaults()
 }
 
 // RefreshToken triggers a token refresh once called
