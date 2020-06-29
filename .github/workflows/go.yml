@@ -1,11 +1,7 @@
 name: Go CLI
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
+on: [push]
+  
 jobs:
 
   run-tests:
@@ -16,7 +12,7 @@ jobs:
     - name: Set up Go 1.x
       uses: actions/setup-go@v2
       with:
-        go-version: ^1.13
+        go-version: ^1.14
       id: go
 
     - name: Check out code into the Go module directory
@@ -32,44 +28,10 @@ jobs:
 
     - name: Build
       run: go build -v .
-
+    
     - name: Test
-      run: go test -v .
-
-  test-coverage:
-    name: Test Coverage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Go 1.x
-        uses: actions/setup-go@v2
-        with:
-          go-version: ^1.13
-        id: go
-        
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
-
-      - name: Get dependencies
-        run: |
-          go get -v -t -d ./...
-          if [ -f Gopkg.toml ]; then
-              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-              dep ensure
-          fi
-
-      - name: Build
-        run: go build -v .
-        
-        
-      - name: Test
-        run:  go test ${{github.workspace}} -coverprofile coverage.out
-
-        
-      - name: Publish code coverage
-        uses: paambaati/codeclimate-action@v2.6.0
-        env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-        with:
-          debug: true
-          coverageCommand: go test ${{github.workspace}} -coverprofile coverage.out
-          coverageLocations: coverage.out:gocov  
+      run: go test -mod vendor -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+    
+    - uses: codecov/codecov-action@v1
+      with:
+        fail_ci_if_error: true
