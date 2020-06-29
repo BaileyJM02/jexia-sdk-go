@@ -14,6 +14,7 @@ type Client struct {
 	token        Token
 	tokenRequest interface{}
 	http         *http.Client
+	abortRefresh chan bool
 }
 
 // APKTokenRequest is the JSON data sent to the /auth endpoint when authenticating with the API key
@@ -61,6 +62,11 @@ func (c *Client) SetToken(token Token) {
 	c.token = token
 }
 
+// GetToken passes the current token
+func (c *Client) GetToken() Token {
+	return c.token
+}
+
 // Token assigns the user token to the client for future use
 func (c *Client) fetchToken(target *Token) error {
 	payload, _ := marshal(c.tokenRequest)
@@ -80,7 +86,9 @@ func (c *Client) fetchToken(target *Token) error {
 // Note: This currently only applies after the first 118 minute loop
 // TODO: Ensure that this new duration is set immediately and not after the current loop
 func (c *Client) SetTokenLifetime(duration time.Duration) {
-	c.token.Lifetime = duration
+	token := c.GetToken()
+	token.Lifetime = duration
+	c.SetToken(token)
 }
 
 // UseAPKToken assigns the user token to the client for future use
@@ -98,7 +106,6 @@ func (c *Client) UseAPKToken(apiKey, apiSecret string) {
 	c.SetToken(token)
 	// 2 hours minus 2 minutes to ensure we never lose the token
 	c.SetTokenLifetime(118 * time.Minute)
-	go c.startRefreshing()
 }
 
 // UseUMSToken assigns the user token to the client for future use
@@ -116,27 +123,50 @@ func (c *Client) UseUMSToken(email, password string) {
 	c.SetToken(token)
 	// 2 hours minus 2 minutes to ensure we never lose the token
 	c.SetTokenLifetime(118 * time.Minute)
-	go c.startRefreshing()
 }
 
 // RefreshToken triggers a token refresh once called
 func (c *Client) RefreshToken() {
-	var token Token
+	var newToken Token
+	token := c.GetToken()
 	payload, _ := marshal(c.tokenRequest)
-	err := c.post(fmt.Sprintf("%v/auth/refresh", c.projectURL), &token, setBody(payload), addToken(c.token.Access))
+	err := c.post(fmt.Sprintf("%v/auth/refresh", c.projectURL), &newToken, setBody(payload), addToken(token.Access))
 	if err != nil {
 		fmt.Printf("error from api. response: %v", err)
 	}
 
 	// Pass the new refresh token over to the client
-	c.token.Refresh = token.Refresh
+	token.Refresh = newToken.Refresh
+	c.SetToken(token)
 }
 
-func (c *Client) startRefreshing() {
-	for {
-		time.Sleep(c.token.Lifetime)
-		go c.RefreshToken()
-	}
+// AutoRefreshToken sets the token to refresh at a certain interval based on token lifetime
+func (c *Client) AutoRefreshToken() {
+	c.newRefreshCycle()
+}
+
+// TODO: Ensure that this new duration is set immediately and not after the current loop
+func (c *Client) newRefreshCycle() {
+	go func() {
+		// start a timer counting down from the token lifetime
+		lifeLeft := time.NewTimer(c.GetToken().Lifetime)
+
+	refreshLoop:
+		for {
+			select {
+			// triggered when the abortRefresh channel is closed
+			case <-c.abortRefresh:
+				// exit for loop not switch
+				break refreshLoop
+				// triggered when the timer finishes
+			case <-lifeLeft.C:
+				// refreshes the token and calls another timer
+				c.RefreshToken()
+				c.newRefreshCycle()
+				break refreshLoop
+			}
+		}
+	}()
 }
 
 // NewClient is used to generate a new client for interacting with the API
@@ -148,7 +178,8 @@ func NewClient(id, zone string, opts ...Option) *Client {
 		token:        Token{},
 		tokenRequest: nil,
 		// TODO: Add optimisations to default http client
-		http: &http.Client{},
+		http:         &http.Client{},
+		abortRefresh: make(chan bool),
 	}
 	for _, o := range opts {
 		o(client)
