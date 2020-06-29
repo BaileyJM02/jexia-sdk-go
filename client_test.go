@@ -337,7 +337,7 @@ func TestAutoRefreshToken(t *testing.T) {
 		rw.Write(payload)
 	}))
 	// Close the server when test finishes
-	defer	server.Close()
+	defer server.Close()
 
 	client := &Client{
 		projectID:   "projectID",
@@ -349,16 +349,19 @@ func TestAutoRefreshToken(t *testing.T) {
 			Email:    "APIKey",
 			Password: "APISecret",
 		},
-		http: &http.Client{},
+		http:         &http.Client{},
 		abortRefresh: make(chan bool),
 	}
 
 	client.AutoRefreshToken()
 	// The shortest amount of time we can wait before a race condition is likely to appear due to the short periods of time
 	// The fastest so we don't have hanging tests
-	time.Sleep(25 * time.Millisecond)
+	time.Sleep(10 * time.Millisecond)
 	// stop the refresh loop externally
 	close(client.abortRefresh)
+	// prevent the test resulting in a race condition due to accessing the token too quick for assetion
+	time.Sleep(10 * time.Millisecond)
+
 	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
 	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
 }
@@ -385,7 +388,7 @@ func TestNewRefreshCycle(t *testing.T) {
 		rw.Write(payload)
 	}))
 	// Close the server when test finishes
-	defer	server.Close()
+	defer server.Close()
 
 	client := &Client{
 		projectID:   "projectID",
@@ -397,18 +400,18 @@ func TestNewRefreshCycle(t *testing.T) {
 			Email:    "APIKey",
 			Password: "APISecret",
 		},
-		http: &http.Client{},
+		http:         &http.Client{},
 		abortRefresh: make(chan bool),
 	}
 
 	client.newRefreshCycle()
-	// The shortest amount of time we can wait before a race condition is likely to 
+	// The shortest amount of time we can wait before a race condition is likely to
 	// appear due to the short periods of time but the fastest so we don't have hanging tests
-	time.Sleep(25 * time.Millisecond)
+	time.Sleep(10 * time.Millisecond)
 	// stop the refresh loop externally
 	close(client.abortRefresh)
-
+	// prevent the test resulting in a race condition due to accessing the token too quick for assetion
+	time.Sleep(10 * time.Millisecond)
 	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
 	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
 }
-
