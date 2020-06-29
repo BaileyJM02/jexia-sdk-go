@@ -3,6 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/baileyjm02/jexia-sdk-go)](https://goreportcard.com/report/github.com/baileyjm02/jexia-sdk-go)
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://pkg.go.dev/github.com/baileyjm02/jexia-sdk-go)
 [![Maintainability](https://api.codeclimate.com/v1/badges/ddae5c0bef65c805a9a4/maintainability)](https://codeclimate.com/github/BaileyJM02/jexia-sdk-go/maintainability)
+[![codecov](https://codecov.io/gh/BaileyJM02/jexia-sdk-go/branch/master/graph/badge.svg)](https://codecov.io/gh/BaileyJM02/jexia-sdk-go)
 [![Release](https://img.shields.io/github/release/baileyjm02/jexia-sdk-go.svg)](https://github.com/baileyjm02/jexia-sdk-go/releases/latest)
 ![Go](https://github.com/baileyjm02/jexia-sdk-go/workflows/Go/badge.svg)
 
