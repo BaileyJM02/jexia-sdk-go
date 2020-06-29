@@ -115,7 +115,7 @@ func (c *Client) SetTokenLifetime(duration time.Duration) {
 	c.SetToken(token)
 }
 
-func (c *Client) setupTokenWithDefaults() (error) {
+func (c *Client) setupTokenWithDefaults() error {
 	var token Token
 	err := c.fetchToken(&token)
 	if err != nil {
@@ -127,7 +127,7 @@ func (c *Client) setupTokenWithDefaults() (error) {
 }
 
 // UseAPKToken assigns the user token to the client for future use
-func (c *Client) UseAPKToken(apiKey, apiSecret string) (error) {
+func (c *Client) UseAPKToken(apiKey, apiSecret string) error {
 	c.SetTokenRequest(APKTokenRequest{
 		Method: "apk",
 		Key:    apiKey,
@@ -141,7 +141,7 @@ func (c *Client) UseAPKToken(apiKey, apiSecret string) (error) {
 }
 
 // UseUMSToken assigns the user token to the client for future use
-func (c *Client) UseUMSToken(email, password string) (error) {
+func (c *Client) UseUMSToken(email, password string) error {
 	c.SetTokenRequest(UMSTokenRequest{
 		Method:   "ums",
 		Email:    email,
