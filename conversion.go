@@ -2,7 +2,6 @@ package jexiasdkgo
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 )
@@ -11,7 +10,6 @@ import (
 func marshal(payload interface{}) ([]byte, error) {
 	b, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Printf("error from marshal. response: %v", err)
 		return nil, err
 	}
 	return b, nil
