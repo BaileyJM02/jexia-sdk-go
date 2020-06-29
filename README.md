@@ -4,9 +4,9 @@
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://pkg.go.dev/github.com/baileyjm02/jexia-sdk-go)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/baileyjm02/jexia-sdk-go)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/BaileyJM02/jexia-sdk-go)
-[![Maintainability](https://img.shields.io/codeclimate/maintainability/BaileyJM02/jexia-sdk-go?logo=code-climate)](https://codeclimate.com/github/BaileyJM02/jexia-sdk-go/maintainability)
-![Code Climate issues](https://img.shields.io/codeclimate/issues/BaileyJM02/jexia-sdk-go?logo=code-climate)
-![Code Climate technical debt](https://img.shields.io/codeclimate/tech-debt/BaileyJM02/jexia-sdk-go?logo=code-climate)
+[![Maintainability](https://img.shields.io/codeclimate/maintainability/BaileyJM02/jexia-sdk-go)](https://codeclimate.com/github/BaileyJM02/jexia-sdk-go/maintainability)
+[![Code Climate issues](https://img.shields.io/codeclimate/issues/BaileyJM02/jexia-sdk-go)](https://codeclimate.com/github/BaileyJM02/jexia-sdk-go/maintainability)
+[![Code Climate technical debt](https://img.shields.io/codeclimate/tech-debt/BaileyJM02/jexia-sdk-go)](https://codeclimate.com/github/BaileyJM02/jexia-sdk-go/maintainability)
 [![codecov](https://codecov.io/gh/BaileyJM02/jexia-sdk-go/branch/master/graph/badge.svg)](https://codecov.io/gh/BaileyJM02/jexia-sdk-go)
 
 
