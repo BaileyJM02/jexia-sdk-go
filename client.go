@@ -110,9 +110,13 @@ func (c *Client) ForgetSecrets() {
 // Note: This currently only applies after the first 118 minute loop
 // TODO: Ensure that this new duration is set immediately and not after the current loop
 func (c *Client) SetTokenLifetime(duration time.Duration) {
+	// Stop the current lifetime loop
+	close(c.abortRefresh)
 	token := c.GetToken()
 	token.Lifetime = duration
 	c.SetToken(token)
+	// Re-open channel
+	c.abortRefresh = make(chan bool)
 }
 
 func (c *Client) setupTokenWithDefaults() error {
@@ -171,6 +175,8 @@ func (c *Client) RefreshToken() {
 
 // AutoRefreshToken sets the token to refresh at a certain interval based on token lifetime
 func (c *Client) AutoRefreshToken() {
+	// Assign incase it was stopped and the user want to start it again by calling this function a second time
+	c.abortRefresh = make(chan bool)
 	c.newRefreshCycle()
 }
 
