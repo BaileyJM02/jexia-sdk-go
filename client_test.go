@@ -347,7 +347,7 @@ func TestAutoRefreshToken(t *testing.T) {
 	token := Token{
 		Access:   "yourCurrentAccessToken",
 		Refresh:  "yourCurrentRefreshToken",
-		Lifetime: 5 * time.Millisecond,
+		Lifetime: 1 * time.Microsecond,
 	}
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -383,13 +383,10 @@ func TestAutoRefreshToken(t *testing.T) {
 	}
 
 	client.AutoRefreshToken()
-	// The shortest amount of time we can wait before a race condition is likely to appear due to the short periods of time
-	// The fastest so we don't have hanging tests
-	time.Sleep(10 * time.Millisecond)
-	// stop the refresh loop externally
+
+	// Delay so the refresh cycle has time to loop, connect to the server and receive a response.
+	time.Sleep(1 * time.Millisecond)
 	close(client.abortRefresh)
-	// prevent the test resulting in a race condition due to accessing the token too quick for assetion
-	time.Sleep(10 * time.Millisecond)
 
 	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
 	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
@@ -398,7 +395,7 @@ func TestNewRefreshCycle(t *testing.T) {
 	token := Token{
 		Access:   "yourCurrentAccessToken",
 		Refresh:  "yourCurrentRefreshToken",
-		Lifetime: 5 * time.Millisecond,
+		Lifetime: 1 * time.Microsecond,
 	}
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -434,13 +431,11 @@ func TestNewRefreshCycle(t *testing.T) {
 	}
 
 	client.newRefreshCycle()
-	// The shortest amount of time we can wait before a race condition is likely to
-	// appear due to the short periods of time but the fastest so we don't have hanging tests
-	time.Sleep(10 * time.Millisecond)
-	// stop the refresh loop externally
+
+	// Delay so the refresh cycle has time to loop, connect to the server and receive a response.
+	time.Sleep(1 * time.Millisecond)
 	close(client.abortRefresh)
-	// prevent the test resulting in a race condition due to accessing the token too quick for assetion
-	time.Sleep(10 * time.Millisecond)
+	
 	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
 	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
 }
