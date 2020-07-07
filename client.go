@@ -3,8 +3,8 @@ package jexiasdkgo
 import (
 	"fmt"
 	"net/http"
-	"time"
 	"sync"
+	"time"
 )
 
 const (
@@ -21,7 +21,7 @@ type Client struct {
 	tokenRequest interface{}
 	http         *http.Client
 	abortRefresh chan bool
-	mux sync.Mutex
+	mux          sync.Mutex
 }
 
 // APKTokenRequest is the JSON data sent to the /auth endpoint when authenticating with the API key
