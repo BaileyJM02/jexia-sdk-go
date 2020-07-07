@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"sync"
 )
 
 const (
@@ -20,6 +21,7 @@ type Client struct {
 	tokenRequest interface{}
 	http         *http.Client
 	abortRefresh chan bool
+	mux sync.Mutex
 }
 
 // APKTokenRequest is the JSON data sent to the /auth endpoint when authenticating with the API key
@@ -50,7 +52,9 @@ type Option func(*Client)
 // SetHTTPClient allows for a custom client to be set
 func SetHTTPClient(http *http.Client) Option {
 	return func(c *Client) {
+		c.mux.Lock()
 		c.http = http
+		c.mux.Unlock()
 	}
 }
 
@@ -58,23 +62,32 @@ func SetHTTPClient(http *http.Client) Option {
 // Note: If such url contains strings such as the project ID, this needs to be computed before being passed through
 func SetProjectURL(url string) Option {
 	return func(c *Client) {
+		c.mux.Lock()
 		c.projectURL = url
+		c.mux.Unlock()
 	}
 }
 
 // SetToken assigns the user token to the client for future use
 func (c *Client) SetToken(token Token) {
+	c.mux.Lock()
 	c.token = token
+	c.mux.Unlock()
 }
 
 // SetTokenRequest assigns the user token to the client for future use
 func (c *Client) SetTokenRequest(tokenRequest interface{}) {
+	c.mux.Lock()
 	c.tokenRequest = tokenRequest
+	c.mux.Unlock()
 }
 
 // GetToken passes the current token
 func (c *Client) GetToken() Token {
-	return c.token
+	c.mux.Lock()
+	token := c.token
+	c.mux.Unlock()
+	return token
 }
 
 // Token assigns the user token to the client for future use
@@ -190,15 +203,16 @@ func (c *Client) newRefreshCycle() {
 		for {
 			select {
 			// triggered when the abortRefresh channel is closed
-			case <-c.abortRefresh:
-				// exit for loop not switch
-				break refreshLoop
-				// triggered when the timer finishes
 			case <-lifeLeft.C:
 				// refreshes the token and calls another timer
 				c.RefreshToken()
 				c.newRefreshCycle()
 				break refreshLoop
+
+			case <-c.abortRefresh:
+				// exit for loop not switch
+				break refreshLoop
+				// triggered when the timer finishes
 			}
 		}
 	}()
