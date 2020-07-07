@@ -385,7 +385,7 @@ func TestAutoRefreshToken(t *testing.T) {
 	client.AutoRefreshToken()
 
 	// Delay so the refresh cycle has time to loop, connect to the server and receive a response.
-	time.Sleep(1 * time.Millisecond)
+	time.Sleep(3 * time.Millisecond)
 	close(client.abortRefresh)
 
 	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
@@ -433,9 +433,9 @@ func TestNewRefreshCycle(t *testing.T) {
 	client.newRefreshCycle()
 
 	// Delay so the refresh cycle has time to loop, connect to the server and receive a response.
-	time.Sleep(1 * time.Millisecond)
+	time.Sleep(3 * time.Millisecond)
 	close(client.abortRefresh)
-	
+
 	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
 	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
 }
