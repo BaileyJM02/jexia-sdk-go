@@ -92,7 +92,9 @@ func TestDatasetSelect(t *testing.T) {
 	)
 	client.SetToken(token)
 	dataset := client.GetDataset("test")
-	data, err := dataset.Select()
+
+	var data []interface{}
+	err := dataset.Select(&data)
 	if err != nil {
 		assert.Error(t, err)
 	}
