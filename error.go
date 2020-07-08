@@ -1,7 +1,6 @@
 package jexiasdkgo
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -19,11 +18,11 @@ func checkForAPIError(response *http.Response) error {
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
 		return nil
 	}
-	var error APIError
+	var APIErr APIError
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return fmt.Errorf("Unable to read response body: %w", err)
 	}
-	json.Unmarshal(b, &error)
-	return fmt.Errorf("Endpoint error: %v (ID: %v)", error.Message, error.ID)
+	unmarshal(b, &APIErr)
+	return fmt.Errorf("Endpoint error: %v (ID: %v) (Raw: %v", APIErr.Message, APIErr.ID, string(b))
 }
