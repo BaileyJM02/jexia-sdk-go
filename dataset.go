@@ -58,15 +58,15 @@ func (d *Dataset) Insert(dataArray []interface{}) ([]interface{}, error) {
 }
 
 // Select allows you to select the data from a dataset
-func (d *Dataset) Select() ([]interface{}, error) {
-	var result []interface{}
+// You should pass an array of types you are expecting to receive: *[]interface{}
+func (d *Dataset) Select(target interface{}) error {
 	err := d.GetClient().get(
 		fmt.Sprintf("%v/ds/%v", d.GetClient().projectURL, d.GetName()),
-		&result,
+		&target,
 		addToken(d.GetClient().GetToken().Access),
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return result, nil
+	return nil
 }
