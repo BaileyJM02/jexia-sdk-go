@@ -5,14 +5,15 @@ import (
 	"sync"
 )
 
-// Dataset
+// Dataset a struct containing the name of the dataset and the client memory pointer
+// As the client is a memory pointer, any changes made to the client will be reflected within the dataset, therefore token refreshes will still work
 type Dataset struct {
 	Name   string
 	Client *Client
 	mux    sync.Mutex
 }
 
-// GetDataset
+// GetDataset returns a dataset instance that can be used to perform actions against
 func (c *Client) GetDataset(name string) *Dataset {
 	return &Dataset{
 		Name:   name,
