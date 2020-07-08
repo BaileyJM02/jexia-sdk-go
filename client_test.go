@@ -114,8 +114,6 @@ func TestSetAPKTokenRequest(t *testing.T) {
 	assert.Equal(t, tokenRequest, client.GetTokenRequest())
 }
 
-// Need to do UMS
-
 func TestGetUMSTokenRequest(t *testing.T) {
 	var client *Client
 	var tokenRequest UMSTokenRequest
