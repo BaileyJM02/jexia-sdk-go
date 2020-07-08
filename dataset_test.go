@@ -185,7 +185,7 @@ func TestDatasetInsert(t *testing.T) {
 	if err != nil {
 		assert.Error(t, err)
 	}
-	assert.Equal(t, expected, data)
+	assert.Equal(t, expected, data[0])
 
 	err = unmarshal([]byte(`{"id":"test","created_at":"2020-07-08T16:08:50.304789Z","updated_at":"2020-07-08T16:08:50.304789Z","@type":"some-type","@name":"tabletop"}`), &actualStruct)
 	if err != nil {
