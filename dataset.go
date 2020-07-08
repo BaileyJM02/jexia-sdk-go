@@ -36,8 +36,9 @@ func (d *Dataset) GetClient() *Client {
 	return client
 }
 
-// Insert
-func (d *Dataset) Insert(dataArray []interface{}) (interface{}, error) {
+// Insert allows you to add sets of data to the dataset
+// If you are inputing a single interface you must wrap it in an array: []interface{}{yourStruct}
+func (d *Dataset) Insert(dataArray []interface{}) ([]interface{}, error) {
 	var result []interface{}
 	payload, err := marshal(dataArray)
 	if err != nil {
@@ -52,10 +53,10 @@ func (d *Dataset) Insert(dataArray []interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return result[0], nil
+	return result, nil
 }
 
-// Select
+// Select allows you to select the data from a dataset
 func (d *Dataset) Select() ([]interface{}, error) {
 	var result []interface{}
 	err := d.GetClient().get(
