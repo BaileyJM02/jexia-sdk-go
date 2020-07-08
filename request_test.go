@@ -2,10 +2,10 @@ package jexiasdkgo
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
-	"fmt"
 
 	"github.com/stretchr/testify/assert"
 )

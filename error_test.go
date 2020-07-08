@@ -2,8 +2,8 @@ package jexiasdkgo
 
 import (
 	"bytes"
-	"net/http"
 	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,8 +24,8 @@ func TestCheckErrorOnFailedCall(t *testing.T) {
 	}
 
 	response = &http.Response{
-		StatusCode:    400,
-		Body:          ioutil.NopCloser(bytes.NewReader(body)),
+		StatusCode: 400,
+		Body:       ioutil.NopCloser(bytes.NewReader(body)),
 	}
 
 	err = checkForAPIError(response)
@@ -36,7 +36,7 @@ func TestCheckErrorOnFailedCall(t *testing.T) {
 func TestCheckErrorOnSuccessfulCall(t *testing.T) {
 	var response *http.Response
 	var target APIError
-	
+
 	target = APIError{
 		ID:      "some-really-long-id",
 		Message: "A really useful message",
@@ -48,8 +48,8 @@ func TestCheckErrorOnSuccessfulCall(t *testing.T) {
 	}
 
 	response = &http.Response{
-		StatusCode:    200,
-		Body:          ioutil.NopCloser(bytes.NewReader(body)),
+		StatusCode: 200,
+		Body:       ioutil.NopCloser(bytes.NewReader(body)),
 	}
 
 	err = checkForAPIError(response)

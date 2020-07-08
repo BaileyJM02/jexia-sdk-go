@@ -1,10 +1,10 @@
 package jexiasdkgo
 
 import (
-	"encoding/json"
-	"testing"
-	"io/ioutil"
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +17,7 @@ func TestMarshal(t *testing.T) {
 	input := test{
 		"testing",
 	}
-	
+
 	actualPure, err := json.Marshal(input)
 	if err != nil {
 		assert.Error(t, err)
@@ -39,7 +39,7 @@ func TestUnmarshal(t *testing.T) {
 	var actualMarshal test
 
 	input := []byte("value: string")
-	
+
 	err := json.Unmarshal(input, &actualPure)
 	if err != nil {
 		assert.Error(t, err)
@@ -62,7 +62,7 @@ func TestRead(t *testing.T) {
 	if err != nil {
 		assert.Error(t, err)
 	}
-	
+
 	actual, err := read(bodyActual)
 	if err != nil {
 		assert.Error(t, err)

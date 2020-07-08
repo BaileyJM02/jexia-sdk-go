@@ -140,7 +140,7 @@ func TestDatasetInsert(t *testing.T) {
 		assert.Equal(t, 1, len(headers["Authorization"]))
 		assert.Equal(t, fmt.Sprintf("Bearer %v", token.Access), headers["Authorization"][0])
 		// Send response to be tested
-		assert.Equal(t,  http.MethodPost, req.Method)
+		assert.Equal(t, http.MethodPost, req.Method)
 
 		payload := ([]byte(`[{"id":"test","created_at":"2020-07-08T16:08:50.304789Z","updated_at":"2020-07-08T16:08:50.304789Z","@type":"some-type","@name":"tabletop"},{"id":"5d7b907c-06bd-41e3-a113-addc230635e1","created_at":"2020-07-08T16:09:30.143354Z","updated_at":"2020-07-08T16:09:30.143354Z","@type":"some-type","@name":"tabletop"},{"id":"d8243cb2-6b87-4d19-8b36-ad51c52103db","created_at":"2020-07-08T16:10:32.089546Z","updated_at":"2020-07-08T16:10:32.089546Z","@type":"some-typ42e","@name":"table324top"}]`))
 		// Send response to be tested
