@@ -82,6 +82,14 @@ func (c *Client) SetTokenRequest(tokenRequest interface{}) {
 	c.mux.Unlock()
 }
 
+// GetTokenRequest passes the current token request
+func (c *Client) GetTokenRequest() interface{} {
+	c.mux.Lock()
+	tokenRequest := c.tokenRequest
+	c.mux.Unlock()
+	return tokenRequest
+}
+
 // GetToken passes the current token
 func (c *Client) GetToken() Token {
 	c.mux.Lock()
@@ -92,7 +100,7 @@ func (c *Client) GetToken() Token {
 
 // Token assigns the user token to the client for future use
 func (c *Client) fetchToken(target *Token) error {
-	payload, _ := marshal(c.tokenRequest)
+	payload, _ := marshal(c.GetTokenRequest())
 	err := c.post(
 		fmt.Sprintf("%v/auth", c.projectURL),
 		&target,
@@ -107,15 +115,15 @@ func (c *Client) fetchToken(target *Token) error {
 
 // ForgetSecrets removes the secret from the APKTokenRequest or the password from the UMSTokenRequest
 func (c *Client) ForgetSecrets() {
-	switch c.tokenRequest.(type) {
+	switch c.GetTokenRequest().(type) {
 	case APKTokenRequest:
-		apk := c.tokenRequest.(APKTokenRequest)
+		apk := c.GetTokenRequest().(APKTokenRequest)
 		apk.Secret = ""
-		c.tokenRequest = apk
+		c.SetTokenRequest(apk)
 	case UMSTokenRequest:
-		ums := c.tokenRequest.(UMSTokenRequest)
+		ums := c.GetTokenRequest().(UMSTokenRequest)
 		ums.Password = ""
-		c.tokenRequest = ums
+		c.SetTokenRequest(ums)
 	}
 }
 
@@ -175,7 +183,7 @@ func (c *Client) UseUMSToken(email, password string) error {
 func (c *Client) RefreshToken() {
 	var newToken Token
 	token := c.GetToken()
-	payload, _ := marshal(c.tokenRequest)
+	payload, _ := marshal(c.GetTokenRequest())
 	err := c.post(fmt.Sprintf("%v/auth/refresh", c.projectURL), &newToken, setBody(payload), addToken(token.Access))
 	if err != nil {
 		fmt.Printf("error from api. response: %v", err)
