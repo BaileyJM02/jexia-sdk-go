@@ -18,11 +18,11 @@ func checkForAPIError(response *http.Response) error {
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
 		return nil
 	}
-	var APIErr APIError
+	var APIErr []APIError
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return fmt.Errorf("Unable to read response body: %w", err)
 	}
 	unmarshal(b, &APIErr)
-	return fmt.Errorf("Endpoint error: %v (ID: %v) (Raw: %v", APIErr.Message, APIErr.ID, string(b))
+	return fmt.Errorf("Endpoint error: %v (ID: %v)", APIErr[0].Message, APIErr[0].ID)
 }
