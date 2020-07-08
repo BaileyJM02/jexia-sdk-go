@@ -42,6 +42,117 @@ func TestSetProjectURL(t *testing.T) {
 	assert.Equal(t, "testURL", client.projectURL)
 }
 
+func TestGetToken(t *testing.T) {
+	var client *Client
+	var token Token
+
+	token = Token{
+		Access:  "yourCurrentAccessToken",
+		Refresh: "yourCurrentRefreshToken",
+	}
+
+	client = &Client{
+		token: token,
+	}
+
+	assert.Equal(t, token, client.GetToken())
+}
+
+func TestSetToken(t *testing.T) {
+	var client *Client
+	var token Token
+
+	client = NewClient(
+		"projectID",
+		"projectZone",
+	)
+
+	token = Token{
+		Access:  "yourCurrentAccessToken",
+		Refresh: "yourCurrentRefreshToken",
+	}
+
+	assert.NotEqual(t, token, client.GetToken())
+	client.SetToken(token)
+	assert.Equal(t, token, client.GetToken())
+}
+
+func TestGetAPKTokenRequest(t *testing.T) {
+	var client *Client
+	var tokenRequest APKTokenRequest
+
+	tokenRequest = APKTokenRequest{
+		Method: "apk",
+		Key:    "APIKey",
+		Secret: "APISecret",
+	}
+
+	client = &Client{
+		tokenRequest: tokenRequest,
+	}
+
+	assert.Equal(t, tokenRequest, client.GetTokenRequest())
+}
+
+func TestSetAPKTokenRequest(t *testing.T) {
+	var client *Client
+	var tokenRequest APKTokenRequest
+
+	client = NewClient(
+		"projectID",
+		"projectZone",
+	)
+
+	tokenRequest = APKTokenRequest{
+		Method: "apk",
+		Key:    "APIKey",
+		Secret: "APISecret",
+	}
+
+	assert.NotEqual(t, tokenRequest, client.GetTokenRequest())
+	client.SetTokenRequest(tokenRequest)
+	assert.Equal(t, tokenRequest, client.GetTokenRequest())
+}
+
+// Need to do UMS
+
+func TestGetUMSTokenRequest(t *testing.T) {
+	var client *Client
+	var tokenRequest UMSTokenRequest
+
+	tokenRequest = UMSTokenRequest{
+		Method:   "ums",
+		Email:    "email",
+		Password: "password",
+	}
+
+	client = &Client{
+		tokenRequest: tokenRequest,
+	}
+
+	assert.Equal(t, tokenRequest, client.GetTokenRequest())
+}
+
+func TestSetUMSTokenRequest(t *testing.T) {
+	var client *Client
+	var tokenRequest UMSTokenRequest
+
+	client = NewClient(
+		"projectID",
+		"projectZone",
+	)
+
+	tokenRequest = UMSTokenRequest{
+		Method:   "ums",
+		Email:    "email",
+		Password: "password",
+	}
+
+	assert.NotEqual(t, tokenRequest, client.GetTokenRequest())
+	client.SetTokenRequest(tokenRequest)
+	assert.Equal(t, tokenRequest, client.GetTokenRequest())
+}
+
 func TestNewClient(t *testing.T) {
 	var client *Client
 	client = NewClient(
@@ -70,6 +181,63 @@ func TestSetNewClientProjectUrl(t *testing.T) {
 		SetProjectURL(server.URL),
 	)
 	assert.Equal(t, client.projectURL, server.URL)
+}
+
+func TestFetchToken(t *testing.T) {
+	// Start a local HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		// Test request parameters
+		assert.Equal(t, req.URL.String(), "/auth")
+		assert.Equal(t, req.Method, http.MethodPost)
+
+		actual := APKTokenRequest{}
+		target := APKTokenRequest{
+			Method: "apk",
+			Key:    "APIKey",
+			Secret: "APISecret",
+		}
+		b, err := read(req.Body)
+		if err != nil {
+			assert.Error(t, err)
+		}
+		err = unmarshal(b, &actual)
+		if err != nil {
+			assert.Error(t, err)
+		}
+		assert.Equal(t, target, actual)
+
+		payload, _ := marshal(Token{
+			Access:  "yourAccessToken",
+			Refresh: "yourRefreshToken",
+		})
+		// Send response to be tested
+		rw.Write(payload)
+	}))
+	// Close the server when test finishes
+	defer server.Close()
+
+	var tokenRequest APKTokenRequest
+	tokenRequest = APKTokenRequest{
+		Method: "apk",
+		Key:    "APIKey",
+		Secret: "APISecret",
+	}
+
+	var client *Client
+	client = NewClient(
+		"projectID",
+		"projectZone",
+		SetProjectURL(server.URL),
+	)
+
+	client.SetTokenRequest(tokenRequest)
+	actual := &Token{}
+	target := &Token{
+		Access:  "yourAccessToken",
+		Refresh: "yourRefreshToken",
+	}
+	client.fetchToken(actual)
+	assert.Equal(t, &target, &actual)
 }
 
 func TestNewClientWithAPKToken(t *testing.T) {
