@@ -2,6 +2,7 @@ package jexiasdkgo
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -182,13 +183,32 @@ func (c *Client) UseUMSToken(email, password string) error {
 // RefreshToken triggers a token refresh once called
 func (c *Client) RefreshToken() {
 	var newToken Token
+	var e Error
 	token := c.GetToken()
 	payload, _ := marshal(token)
 	err := c.post(fmt.Sprintf("%v/auth/refresh", c.projectURL), &newToken, setBody(payload), addToken(token.Access))
+
+	// Check what error we get, and if it's temporary
 	if err != nil {
-		fmt.Printf("error from api. response: %v", err)
+		e = *getNiceError(err, "Error refreshing token")
+		fmt.Println(e.Error())
 	}
-	
+
+	// If temporary, try again as the connection could have been the issue,
+	if e.Temporary {
+		c.RefreshToken()
+		fmt.Println("Trying to refresh token again")
+		return
+	}
+
+	if newToken == (Token{}) {
+		// The request was not successful, we tried to get a token but there was a serious error
+		fmt.Printf("\nNew Token: %v", newToken)
+		fmt.Printf("\nNew Token: %v", e.Error())
+		log.Fatal("Error refreshing token, there was a unknown, presumed serious error\n")
+		return
+	}
+
 	// Pass the new tokens over to the existing, ensuring that the lifetime is not changed
 	token.Access = newToken.Access
 	token.Refresh = newToken.Refresh
@@ -235,7 +255,9 @@ func NewClient(id, zone string, opts ...Option) *Client {
 		token:        Token{},
 		tokenRequest: nil,
 		// TODO: Add optimisations to default http client
-		http:         &http.Client{},
+		http: &http.Client{
+			Timeout: 15 * time.Second,
+		},
 		abortRefresh: make(chan bool),
 	}
 	for _, o := range opts {
