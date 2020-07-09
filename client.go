@@ -183,14 +183,18 @@ func (c *Client) UseUMSToken(email, password string) error {
 func (c *Client) RefreshToken() {
 	var newToken Token
 	token := c.GetToken()
-	payload, _ := marshal(c.GetTokenRequest())
+	payload, _ := marshal(token)
 	err := c.post(fmt.Sprintf("%v/auth/refresh", c.projectURL), &newToken, setBody(payload), addToken(token.Access))
 	if err != nil {
 		fmt.Printf("error from api. response: %v", err)
 	}
 
-	// Pass the new token over to the client
-	c.SetToken(newToken)
+	fmt.Println("Refreshed successfully")
+
+	// Pass the new tokens over to the existing, ensuring that the lifetime is not changed
+	token.Access = newToken.Access
+	token.Refresh = newToken.Refresh
+	c.SetToken(token)
 }
 
 // AutoRefreshToken sets the token to refresh at a certain interval based on token lifetime
@@ -213,8 +217,7 @@ func (c *Client) newRefreshCycle() {
 			case <-lifeLeft.C:
 				// refreshes the token and calls another timer
 				c.RefreshToken()
-				c.newRefreshCycle()
-				break refreshLoop
+				lifeLeft = time.NewTimer(c.GetToken().Lifetime)
 
 			case <-c.abortRefresh:
 				// exit for loop not switch
