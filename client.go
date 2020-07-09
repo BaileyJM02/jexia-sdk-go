@@ -203,8 +203,6 @@ func (c *Client) RefreshToken() {
 
 	if newToken == (Token{}) {
 		// The request was not successful, we tried to get a token but there was a serious error
-		fmt.Printf("\nNew Token: %v", newToken)
-		fmt.Printf("\nNew Token: %v", e.Error())
 		log.Fatal("Error refreshing token, there was a unknown, presumed serious error\n")
 		return
 	}
