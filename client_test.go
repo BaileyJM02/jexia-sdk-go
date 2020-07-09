@@ -161,7 +161,9 @@ func TestNewClient(t *testing.T) {
 	assert.Equal(t, "projectZone", client.projectZone)
 	assert.Equal(t, Token{}, client.token)
 	assert.Equal(t, nil, client.tokenRequest)
-	assert.Equal(t, &http.Client{}, client.http)
+	assert.Equal(t, &http.Client{
+		Timeout: 15 * time.Second,
+	}, client.http)
 }
 
 func TestSetNewClientProjectUrl(t *testing.T) {
@@ -318,7 +320,9 @@ func TestRefreshTokenWithAPKToken(t *testing.T) {
 			Key:    "APIKey",
 			Secret: "APISecret",
 		},
-		http: &http.Client{},
+		http: &http.Client{
+			Timeout: 15 * time.Second,
+		},
 	}
 
 	client.RefreshToken()
@@ -470,7 +474,9 @@ func TestRefreshTokenWithUMSToken(t *testing.T) {
 			Email:    "APIKey",
 			Password: "APISecret",
 		},
-		http: &http.Client{},
+		http: &http.Client{
+			Timeout: 15 * time.Second,
+		},
 	}
 
 	client.RefreshToken()
@@ -554,7 +560,9 @@ func TestAutoRefreshToken(t *testing.T) {
 			Email:    "APIKey",
 			Password: "APISecret",
 		},
-		http:         &http.Client{},
+		http: &http.Client{
+			Timeout: 15 * time.Second,
+		},
 		abortRefresh: make(chan bool),
 	}
 
@@ -610,11 +618,87 @@ func TestNewRefreshCycle(t *testing.T) {
 			Email:    "APIKey",
 			Password: "APISecret",
 		},
-		http:         &http.Client{},
+		http: &http.Client{
+			Timeout: 15 * time.Second,
+		},
 		abortRefresh: make(chan bool),
 	}
 
 	client.newRefreshCycle()
+
+	// Delay so the refresh cycle has time to loop, connect to the server and receive a response.
+	time.Sleep(3 * time.Millisecond)
+	close(client.abortRefresh)
+
+	assert.Equal(t, "yourNewAccessToken", client.GetToken().Access)
+	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
+}
+
+func TestRefreshTokenOnTokenErrorRetry(t *testing.T) {
+	fetched := 0
+	token := Token{
+		Access:   "yourCurrentAccessToken",
+		Refresh:  "yourCurrentRefreshToken",
+		Lifetime: 1 * time.Microsecond,
+	}
+	newToken := Token{
+		Access:  "yourNewAccessToken",
+		Refresh: "yourNewRefreshToken",
+	}
+	completedToken := Token{
+		Access:  "finished",
+		Refresh: "finished",
+	}
+	// Start a local HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		// Test request parameters
+		assert.Equal(t, "/auth/refresh", req.URL.String())
+		headers := req.Header
+		// Send response to be tested
+		assert.Equal(t, req.Method, http.MethodPost)
+		assert.Equal(t, 1, len(headers["Authorization"]))
+		switch pass := fetched; pass {
+		// First pass
+		case 0:
+			assert.Equal(t, fmt.Sprintf("Bearer %v", token.Access), headers["Authorization"][0])
+			rw.WriteHeader(500)
+			rw.Write([]byte("500 Error"))
+			// Second pass
+		case 1:
+			assert.Equal(t, fmt.Sprintf("Bearer %v", token.Access), headers["Authorization"][0])
+			payload, _ := marshal(newToken)
+			rw.Write(payload)
+			// Third pass
+		case 2:
+			assert.Equal(t, fmt.Sprintf("Bearer %v", newToken.Access), headers["Authorization"][0])
+			payload, _ := marshal(completedToken)
+			rw.Write(payload)
+
+		default:
+			assert.Error(t, fmt.Errorf("called again"))
+		}
+		fetched++
+	}))
+	// Close the server when test finishes
+	defer server.Close()
+
+	client := &Client{
+		projectID:   "projectID",
+		projectZone: "projectZone",
+		projectURL:  server.URL,
+		token:       token,
+		tokenRequest: UMSTokenRequest{
+			Method:   "ums",
+			Email:    "APIKey",
+			Password: "APISecret",
+		},
+		http: &http.Client{
+			Timeout: 15 * time.Second,
+		},
+		abortRefresh: make(chan bool),
+	}
+
+	client.RefreshToken()
 
 	// Delay so the refresh cycle has time to loop, connect to the server and receive a response.
 	time.Sleep(3 * time.Millisecond)
