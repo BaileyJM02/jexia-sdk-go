@@ -188,9 +188,7 @@ func (c *Client) RefreshToken() {
 	if err != nil {
 		fmt.Printf("error from api. response: %v", err)
 	}
-
-	fmt.Println("Refreshed successfully")
-
+	
 	// Pass the new tokens over to the existing, ensuring that the lifetime is not changed
 	token.Access = newToken.Access
 	token.Refresh = newToken.Refresh
