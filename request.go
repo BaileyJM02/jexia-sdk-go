@@ -67,7 +67,12 @@ func (c *Client) buildRequest(method, url string, opts ...requestOption) (*http.
 func (c *Client) executeRequest(req *http.Request, target interface{}) error {
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return err
+		return &Error{
+			ID:        "e005",
+			Message:   fmt.Errorf("Unable to execute http request: %w", err).Error(),
+			Origin:    Internal,
+			Temporary: false,
+		}
 	}
 
 	defer resp.Body.Close()
@@ -78,6 +83,9 @@ func (c *Client) executeRequest(req *http.Request, target interface{}) error {
 	}
 
 	b, err := read(resp.Body)
+	if err != nil {
+		return err
+	}
 	return unmarshal(b, &target)
 }
 
