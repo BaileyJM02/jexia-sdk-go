@@ -3,6 +3,7 @@ package jexiasdkgo
 import (
 	"encoding/json"
 	"io"
+	"fmt"
 	"io/ioutil"
 )
 
@@ -25,7 +26,12 @@ func unmarshal(b []byte, target interface{}) error {
 func read(body io.Reader) ([]byte, error) {
 	b, err := ioutil.ReadAll(body)
 	if err != nil {
-		return nil, err
+		return nil, &Error{
+			ID:        "e006",
+			Message:   fmt.Errorf("Unable to read http body: %w", err).Error(),
+			Origin:    Internal,
+			Temporary: false,
+		}
 	}
-	return b, err
+	return b, nil
 }
