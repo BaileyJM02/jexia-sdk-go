@@ -299,6 +299,7 @@ func TestRefreshTokenWithAPKToken(t *testing.T) {
 		assert.Equal(t, req.Method, http.MethodPost)
 
 		payload, _ := marshal(Token{
+			Access:  "yourNewAccessToken",
 			Refresh: "yourNewRefreshToken",
 		})
 		// Send response to be tested
@@ -321,7 +322,7 @@ func TestRefreshTokenWithAPKToken(t *testing.T) {
 	}
 
 	client.RefreshToken()
-	assert.Equal(t, "yourCurrentAccessToken", client.token.Access)
+	assert.Equal(t, "yourNewAccessToken", client.token.Access)
 	assert.Equal(t, "yourNewRefreshToken", client.token.Refresh)
 }
 
@@ -450,6 +451,7 @@ func TestRefreshTokenWithUMSToken(t *testing.T) {
 		assert.Equal(t, req.Method, http.MethodPost)
 
 		payload, _ := marshal(Token{
+			Access:  "yourNewAccessToken",
 			Refresh: "yourNewRefreshToken",
 		})
 		// Send response to be tested
@@ -472,7 +474,7 @@ func TestRefreshTokenWithUMSToken(t *testing.T) {
 	}
 
 	client.RefreshToken()
-	assert.Equal(t, "yourCurrentAccessToken", client.token.Access)
+	assert.Equal(t, "yourNewAccessToken", client.token.Access)
 	assert.Equal(t, "yourNewRefreshToken", client.token.Refresh)
 }
 
@@ -510,10 +512,15 @@ func TestSetTokenLifetimeWithUMSToken(t *testing.T) {
 }
 
 func TestAutoRefreshToken(t *testing.T) {
+	fetched := false
 	token := Token{
 		Access:   "yourCurrentAccessToken",
 		Refresh:  "yourCurrentRefreshToken",
 		Lifetime: 1 * time.Microsecond,
+	}
+	newToken := Token{
+		Access:  "yourNewAccessToken",
+		Refresh: "yourNewRefreshToken",
 	}
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -521,15 +528,18 @@ func TestAutoRefreshToken(t *testing.T) {
 		assert.Equal(t, "/auth/refresh", req.URL.String())
 		headers := req.Header
 		assert.Equal(t, 1, len(headers["Authorization"]))
-		assert.Equal(t, fmt.Sprintf("Bearer %v", token.Access), headers["Authorization"][0])
+		if fetched == true {
+			assert.Equal(t, fmt.Sprintf("Bearer %v", newToken.Access), headers["Authorization"][0])
+		} else {
+			assert.Equal(t, fmt.Sprintf("Bearer %v", token.Access), headers["Authorization"][0])
+		}
 		// Send response to be tested
 		assert.Equal(t, req.Method, http.MethodPost)
 
-		payload, _ := marshal(Token{
-			Refresh: "yourNewRefreshToken",
-		})
+		payload, _ := marshal(newToken)
 		// Send response to be tested
 		rw.Write(payload)
+		fetched = true
 	}))
 	// Close the server when test finishes
 	defer server.Close()
@@ -554,14 +564,19 @@ func TestAutoRefreshToken(t *testing.T) {
 	time.Sleep(3 * time.Millisecond)
 	close(client.abortRefresh)
 
-	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
+	assert.Equal(t, "yourNewAccessToken", client.GetToken().Access)
 	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
 }
 func TestNewRefreshCycle(t *testing.T) {
+	fetched := false
 	token := Token{
 		Access:   "yourCurrentAccessToken",
 		Refresh:  "yourCurrentRefreshToken",
 		Lifetime: 1 * time.Microsecond,
+	}
+	newToken := Token{
+		Access:  "yourNewAccessToken",
+		Refresh: "yourNewRefreshToken",
 	}
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -569,15 +584,18 @@ func TestNewRefreshCycle(t *testing.T) {
 		assert.Equal(t, "/auth/refresh", req.URL.String())
 		headers := req.Header
 		assert.Equal(t, 1, len(headers["Authorization"]))
-		assert.Equal(t, fmt.Sprintf("Bearer %v", token.Access), headers["Authorization"][0])
+		if fetched == true {
+			assert.Equal(t, fmt.Sprintf("Bearer %v", newToken.Access), headers["Authorization"][0])
+		} else {
+			assert.Equal(t, fmt.Sprintf("Bearer %v", token.Access), headers["Authorization"][0])
+		}
 		// Send response to be tested
 		assert.Equal(t, req.Method, http.MethodPost)
 
-		payload, _ := marshal(Token{
-			Refresh: "yourNewRefreshToken",
-		})
+		payload, _ := marshal(newToken)
 		// Send response to be tested
 		rw.Write(payload)
+		fetched = true
 	}))
 	// Close the server when test finishes
 	defer server.Close()
@@ -602,7 +620,7 @@ func TestNewRefreshCycle(t *testing.T) {
 	time.Sleep(3 * time.Millisecond)
 	close(client.abortRefresh)
 
-	assert.Equal(t, "yourCurrentAccessToken", client.GetToken().Access)
+	assert.Equal(t, "yourNewAccessToken", client.GetToken().Access)
 	assert.Equal(t, "yourNewRefreshToken", client.GetToken().Refresh)
 }
 
