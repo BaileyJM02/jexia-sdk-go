@@ -189,9 +189,8 @@ func (c *Client) RefreshToken() {
 		fmt.Printf("error from api. response: %v", err)
 	}
 
-	// Pass the new refresh token over to the client
-	token.Refresh = newToken.Refresh
-	c.SetToken(token)
+	// Pass the new token over to the client
+	c.SetToken(newToken)
 }
 
 // AutoRefreshToken sets the token to refresh at a certain interval based on token lifetime
