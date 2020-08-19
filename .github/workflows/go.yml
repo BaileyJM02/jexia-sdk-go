@@ -33,7 +33,7 @@ jobs:
       run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 
     - name: Test Format
-      run: go gofmt -s -d -e -l ./
+      run: gofmt -s -d -e -l ./
 
 
     - uses: codecov/codecov-action@v1
