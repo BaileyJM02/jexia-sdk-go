@@ -15,7 +15,7 @@ const API = "API"
 // Error is the error returned, allows for retry scenarios
 type Error struct {
 	ID        string `json:"request_id"`
-	Message   string  `json:"message"`
+	Message   string `json:"message"`
 	Origin    string `json:"origin"`
 	Temporary bool   `json:"temporary"`
 }
@@ -78,7 +78,7 @@ func getNiceError(err error, message string) *Error {
 	default:
 		return &Error{
 			ID:        "e004",
-			Message:   fmt.Errorf("%v: %v\n", message, err).Error(),
+			Message:   fmt.Errorf("%v: %v", message, err).Error(),
 			Origin:    Internal,
 			Temporary: false,
 		}
