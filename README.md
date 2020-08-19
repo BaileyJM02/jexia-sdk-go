@@ -48,4 +48,4 @@ Thank you for your interest in contributing to this repo! ❤
 
 Everyone is welcome to contribute, whether it's in the form of code, documentation, bug reports, feature requests, or anything else. We encourage you to experiment with the project and make contributions to help evolve it to meet your needs!
 
-See Jexia's Maestro [contributing guide](https://github.com/jexia/maestro/blob/master/CONTRIBUTING.md) for more details.
+See Jexia's Semaphore [contributing guide](https://github.com/jexia/semaphore/blob/master/CONTRIBUTING.md) for more details.
