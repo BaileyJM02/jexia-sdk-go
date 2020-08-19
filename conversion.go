@@ -2,8 +2,8 @@ package jexiasdkgo
 
 import (
 	"encoding/json"
-	"io"
 	"fmt"
+	"io"
 	"io/ioutil"
 )
 
