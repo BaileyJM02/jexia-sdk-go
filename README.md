@@ -1,3 +1,20 @@
+# Notice
+Unfortunately Jexia has ceased operations and no longer provides their services. Therefore this repository has been archived, and the project abandoned.
+
+> **Is the Jexia platform going offline?**
+> 
+> Yes, we will be taking down the platform and all it’s contents by April 30th 2021. All user agreements also end on that date.
+> 
+> **Why is the Jexia platform going offline?**
+>
+> Over the past few years we’ve poured our hearts into this platform. And although we consider it to be a technological success, we unfortunately haven’t been able match this commercially. As a result we have decided to call it quits.
+>
+> **Until when can I access my account/projects?**
+>
+> Your account and projects will be accessible until the 30th of April 2021.
+
+*Retrieved from [Jexia's FAQ](https://www.jexia.com/en/faq/).*
+
 # [![Jexia](https://user-images.githubusercontent.com/3440116/77702983-019eb580-6fba-11ea-8d2c-f6a6b8e60cbd.jpg)](https://jexia.com) Jexia SDK Go <!-- omit in toc -->
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/baileyjm02/jexia-sdk-go)](https://goreportcard.com/report/github.com/baileyjm02/jexia-sdk-go)
